@@ -41,9 +41,9 @@ RUN groupadd -g $host_gid nxp && \
 ARG DOCKER_WORKDIR
 WORKDIR ${DOCKER_WORKDIR}
 
-# Copy yocto-build.sh into container
-COPY yocto-build.sh /usr/local/bin/yocto-build.sh
-RUN chmod +x /usr/local/bin/yocto-build.sh
+# Copy Yocto helper scripts into the container
+COPY yocto-repo-build.sh yocto-launch.sh yocto-bitbake-image.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/yocto-repo-build.sh /usr/local/bin/yocto-launch.sh /usr/local/bin/yocto-bitbake-image.sh
 
 # Yocto builds should run as a normal user.
 USER $USER
