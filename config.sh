@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Docker configuration
-export DOCKER_WORKDIR="${HOME}/yocto-builds"
+export DOCKER_WORKDIR="/run/media/arash/Projects/iMX95/yocto-builds"
 
 # Yocto build configuration
 export REMOTE="https://github.com/nxp-imx/imx-manifest"
 
 # Default build configuration (can be overridden)
-export MACHINE="${MACHINE:-imx8mpevk}"
-export DISTRO="${DISTRO:-fsl-imx-wayland}"
-export IMAGES="${IMAGES:-imx-image-core}"
+export MACHINE="imx95-15x15-lpddr4x-frdm"
+export DISTRO="fsl-imx-wayland"
+export IMAGES="imx-image-full"
 
 # Function to get version config from versions.txt
 get_version_config() {
