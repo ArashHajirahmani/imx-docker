@@ -18,6 +18,9 @@ RUN locale-gen en_US.UTF-8 && \
 ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
+# Point Git global config to a persistent file inside the mounted workspace
+ENV GIT_CONFIG_GLOBAL=/run/media/arash/Projects/iMX95/imx-docker/.gitconfig
+
 # Yocto needs 'source' command for setting up the build environment, so replace
 # the 'sh' alias to 'bash' instead of 'dash'.
 RUN rm /bin/sh && ln -s bash /bin/sh
@@ -35,15 +38,24 @@ RUN echo "${USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${USER} && \
 # outside the container, on host directories, as docker volumes.
 ARG host_uid \
     host_gid
-RUN groupadd -g $host_gid nxp && \
-    useradd -g $host_gid -m -s /bin/bash -u $host_uid $USER
+
+# Robust handling for pre-existing GID/UID in the Ubuntu base image
+RUN if ! getent group $host_gid > /dev/null 2>&1; then \
+        groupadd -g $host_gid nxp; \
+    fi && \
+    if ! getent passwd $host_uid > /dev/null 2>&1; then \
+        useradd -g $host_gid -m -s /bin/bash -u $host_uid $USER; \
+    else \
+        existing_user=$(getent passwd $host_uid | cut -d: -f1); \
+        usermod -l $USER -d /home/$USER -m $existing_user; \
+    fi
 
 ARG DOCKER_WORKDIR
 WORKDIR ${DOCKER_WORKDIR}
 
-# Copy yocto-build.sh into container
-COPY yocto-build.sh /usr/local/bin/yocto-build.sh
-RUN chmod +x /usr/local/bin/yocto-build.sh
+# Copy Yocto helper scripts into the container
+COPY yocto-repo-build.sh yocto-launch.sh yocto-bitbake-image.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/yocto-repo-build.sh /usr/local/bin/yocto-launch.sh /usr/local/bin/yocto-bitbake-image.sh
 
 # Yocto builds should run as a normal user.
 USER $USER
