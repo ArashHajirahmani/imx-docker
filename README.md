@@ -83,7 +83,9 @@ sudo systemctl restart docker
 ├── docker-build.sh
 ├── docker-run.sh
 ├── versions.txt
-└── yocto-build.sh
+├── yocto-repo-build.sh
+├── yocto-launch.sh
+└── yocto-bitbake-image.sh
 ```
 
 ## Configuration
@@ -140,38 +142,52 @@ This will:
 - Select the appropriate Ubuntu-based Dockerfile
 - Install all Yocto build dependencies
 - Create a user matching your host UID/GID
-- Copy the `yocto-build.sh` script into the image
+- Copy `yocto-repo-build.sh`, `yocto-launch.sh`, and `yocto-bitbake-image.sh` into the image
+
+Rebuild the image after pulling these scripts so the container contains them.
 
 ### Step 2: Run the Build
 
-#### Interactive Shell
+The old single script re-ran `repo init` and the setup script on every start, which reset an existing tree. The work is split into three scripts:
 
-Start an interactive shell in the container:
+| Script | What it does |
+| --- | --- |
+| `yocto-repo-build.sh` | First-time setup. Runs `repo init`, `repo sync`, creates the build directory, then `bitbake -k`. Running it again reinitializes the project. |
+| `yocto-launch.sh` | Enters an existing build. Checks that the project and `build_<DISTRO>` already exist, loads that environment, and leaves a shell ready for `bitbake` or any other command. It does not rewrite configuration. |
+| `yocto-bitbake-image.sh` | Runs `bitbake -k ${IMAGES}` in the existing build directory. It does not wipe or reinitialize the project. |
 
-```bash
-./docker-run.sh 6.18.37-2.1.0
-```
-
-Then manually run the build script:
-
-```bash
-. /usr/local/bin/yocto-build.sh
-```
-
-#### Direct Build
-
-Run the build directly without entering the container:
+#### First-time setup
 
 ```bash
-./docker-run.sh 6.18.37-2.1.0 yocto-build.sh
+./docker-run.sh 6.18.37-2.1.0 yocto-repo-build.sh
 ```
+
+#### Continue an existing build
+
+```bash
+./docker-run.sh 6.18.37-2.1.0 yocto-bitbake-image.sh
+```
+
+#### Interactive shell in the existing environment
+
+```bash
+./docker-run.sh 6.18.37-2.1.0 yocto-launch.sh
+```
+
+From a shell that is already inside the container:
+
+```bash
+. /usr/local/bin/yocto-launch.sh
+```
+
+`yocto-launch.sh` and `yocto-bitbake-image.sh` stop with an error if `build_<DISTRO>` is not already there. They will not create a new one.
 
 ### Step 3: Customize Build Parameters
 
 You can override default build parameters using environment variables:
 
 ```bash
-MACHINE=imx8mmevk DISTRO=fsl-imx-xwayland IMAGES=imx-image-full ./docker-run.sh 6.18.37-2.1.0 yocto-build.sh
+MACHINE=imx8mmevk DISTRO=fsl-imx-xwayland IMAGES=imx-image-full ./docker-run.sh 6.18.37-2.1.0 yocto-bitbake-image.sh
 ```
 
 ## Volume Mounts
