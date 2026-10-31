@@ -85,7 +85,8 @@ sudo systemctl restart docker
 ├── versions.txt
 ├── yocto-repo-build.sh
 ├── yocto-launch.sh
-└── yocto-bitbake-image.sh
+├── yocto-bitbake-image.sh
+└── yocto-bitbake-sdk.sh
 ```
 
 ## Configuration
@@ -142,7 +143,7 @@ This will:
 - Select the appropriate Ubuntu-based Dockerfile
 - Install all Yocto build dependencies
 - Create a user matching your host UID/GID
-- Copy `yocto-repo-build.sh`, `yocto-launch.sh`, and `yocto-bitbake-image.sh` into the image
+- Copy `yocto-repo-build.sh`, `yocto-launch.sh`, `yocto-bitbake-image.sh`, and `yocto-bitbake-sdk.sh` into the image
 
 Rebuild the image after pulling these scripts so the container contains them.
 
@@ -155,6 +156,7 @@ The old single script re-ran `repo init` and the setup script on every start, wh
 | `yocto-repo-build.sh` | First-time setup. Runs `repo init`, `repo sync`, creates the build directory, then `bitbake -k`. Running it again reinitializes the project. |
 | `yocto-launch.sh` | Enters an existing build. Checks that the project and `build_<DISTRO>` already exist, loads that environment, and leaves a shell ready for `bitbake` or any other command. It does not rewrite configuration. |
 | `yocto-bitbake-image.sh` | Runs `bitbake -k ${IMAGES}` in the existing build directory. It does not wipe or reinitialize the project. |
+| `yocto-bitbake-sdk.sh` | Runs `bitbake -k ${IMAGES} -c populate_sdk` in the existing build directory. The SDK matches the packages in that image. `imx-image-full` includes Qt 6 and the machine-learning stack. It does not wipe or reinitialize the project. |
 
 #### First-time setup
 
@@ -168,6 +170,14 @@ The old single script re-ran `repo init` and the setup script on every start, wh
 ./docker-run.sh 6.18.37-2.1.0 yocto-bitbake-image.sh
 ```
 
+#### Build the SDK
+
+```bash
+./docker-run.sh 6.18.37-2.1.0 yocto-bitbake-sdk.sh
+```
+
+The installer is written to `build_<DISTRO>/tmp/deploy/sdk/` inside the workspace.
+
 #### Interactive shell in the existing environment
 
 ```bash
@@ -180,7 +190,7 @@ From a shell that is already inside the container:
 . /usr/local/bin/yocto-launch.sh
 ```
 
-`yocto-launch.sh` and `yocto-bitbake-image.sh` stop with an error if `build_<DISTRO>` is not already there. They will not create a new one.
+`yocto-launch.sh`, `yocto-bitbake-image.sh`, and `yocto-bitbake-sdk.sh` stop with an error if `build_<DISTRO>` is not already there. They will not create a new one.
 
 ### Step 3: Customize Build Parameters
 

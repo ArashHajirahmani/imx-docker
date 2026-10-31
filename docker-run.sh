@@ -7,6 +7,7 @@ if [ $# -eq 0 ]; then
     echo "Example: ./docker-run.sh 6.18.2-1.0.0"
     echo "Example: ./docker-run.sh 6.18.2-1.0.0 yocto-launch.sh"
     echo "Example: ./docker-run.sh 6.18.2-1.0.0 yocto-bitbake-image.sh"
+    echo "Example: ./docker-run.sh 6.18.2-1.0.0 yocto-bitbake-sdk.sh"
     echo ""
     echo "Available versions:"
     grep -v "^#" versions.txt | grep -v "^$" | awk '{printf "  %-20s Ubuntu %-6s %s\n", $1, $2, $3}'

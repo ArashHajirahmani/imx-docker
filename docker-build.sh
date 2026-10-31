@@ -44,7 +44,7 @@ if [ ! -f "${DOCKERFILE}" ]; then
     exit 1
 fi
 
-for script in yocto-repo-build.sh yocto-launch.sh yocto-bitbake-image.sh; do
+for script in yocto-repo-build.sh yocto-launch.sh yocto-bitbake-image.sh yocto-bitbake-sdk.sh; do
     if [ ! -f "$script" ]; then
         echo "Error: $script not found"
         exit 1
