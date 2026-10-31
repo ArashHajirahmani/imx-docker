@@ -44,10 +44,12 @@ if [ ! -f "${DOCKERFILE}" ]; then
     exit 1
 fi
 
-if [ ! -f "yocto-build.sh" ]; then
-    echo "Error: yocto-build.sh not found"
-    exit 1
-fi
+for script in yocto-repo-build.sh yocto-launch.sh yocto-bitbake-image.sh; do
+    if [ ! -f "$script" ]; then
+        echo "Error: $script not found"
+        exit 1
+    fi
+done
 
 docker build \
     ${NO_CACHE} \
