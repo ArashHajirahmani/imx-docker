@@ -5,7 +5,8 @@ source config.sh
 if [ $# -eq 0 ]; then
     echo "Usage: ./docker-run.sh VERSION [COMMAND]"
     echo "Example: ./docker-run.sh 6.18.2-1.0.0"
-    echo "Example: ./docker-run.sh 6.18.2-1.0.0 yocto-build.sh"
+    echo "Example: ./docker-run.sh 6.18.2-1.0.0 yocto-launch.sh"
+    echo "Example: ./docker-run.sh 6.18.2-1.0.0 yocto-bitbake-image.sh"
     echo ""
     echo "Available versions:"
     grep -v "^#" versions.txt | grep -v "^$" | awk '{printf "  %-20s Ubuntu %-6s %s\n", $1, $2, $3}'
@@ -40,10 +41,6 @@ VOLUME_MOUNTS="--volume ${DOCKER_WORKDIR}:${DOCKER_WORKDIR}"
 
 if [ -d "${HOME}/.ssh" ]; then
     VOLUME_MOUNTS="${VOLUME_MOUNTS} --volume ${HOME}/.ssh:${HOME}/.ssh:ro"
-fi
-
-if [ -f "${HOME}/.gitconfig" ]; then
-    VOLUME_MOUNTS="${VOLUME_MOUNTS} --volume ${HOME}/.gitconfig:${HOME}/.gitconfig:ro"
 fi
 
 # Pass configuration as environment variables to container
